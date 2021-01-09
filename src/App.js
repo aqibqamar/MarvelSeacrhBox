@@ -1,97 +1,134 @@
-import React, { Component } from "react";
+import React from 'react';
 import axios from "axios";
-class App extends Component {
+// import { makeStyles } from '@material-ui/core/styles';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import Divider from '@material-ui/core/Divider';
+import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
+import Pagination from '@material-ui/lab/Pagination';
+import Button from '@material-ui/core/Button';
+import { Link } from "react-router-dom";
+import * as actions from "./Actions";
+import { connect } from "react-redux";
+import withStyles from "@material-ui/core/styles/withStyles";
+const styles = theme => ({
+  app: {
+    width: '100%',
+    backgroundColor: theme.palette.background.paper,
+  },
+  inline: {
+    display: 'inline',
+  },
+  root: {
+    '& > *': {
+      marginTop: theme.spacing(2),
+    },
+  },
+});
 
-
+class App extends React.Component {
   constructor(props) {
     super(props);
+    this.numberOfRecordPerPage = 5;
     this.state = {
-      filterType: "series",
-      jsonObject: [],
-      searchedText: ""
-    }
-    // series have "title" property and characters have "name" property
-    // when getting the data of series. It will use "title" property and so on.
-    this.filterTitle = {
-      "series" : "title",
-      "characters" : "name",
-      "comics" : "title",
+      albumData: props.allAlbums.albumData,
+      newDataLength: this.numberOfRecordPerPage,
+      previousDataLength: 0
     }
   }
 
-  // calling the Api on mount
   componentDidMount() {
-    this.callApi();
-  }
-
-  // Api method call get data from marvel
-  callApi() {
-    // If the api is called once dont call it again and again.
-    if (!this.state.jsonObject[this.state.filterType]) {
-      let api = "http://gateway.marvel.com/v1/public/" + this.state.filterType + "?ts=1609169846315&apikey=06b519b87668f473a42846dc5319e017&hash=4aa75c58439e894c3d11fd829b53d7b0";
+    // Update the document title using the browser API
+    if (this.props.allAlbums.albumData.length === 0) {
+      let api = "https://jsonplaceholder.typicode.com/albums/";
       axios.get(api).then(response => {
-        const { jsonObject, filterType } = this.state;
-        // stroing the data into its filterType so that i can reuse the data
-        jsonObject[filterType] = response.data.data.results;
-        this.setState({
-          jsonObject: jsonObject
+        return response.data;
+      }).then((responseData) => {
+        axios.get("http://jsonplaceholder.typicode.com/users").then((userData) => {
+          responseData.map((albumItem) => {
+            userData.data.find((userItem) => {
+              if (userItem.id === albumItem.userId) {
+                albumItem.user = userItem
+              }
+            });
+          });
+          this.setState({
+            albumData: responseData
+          });
         });
+      });
+    } else {
+      this.setState({
+        albumData: this.props.allAlbums.albumData
       });
     }
   }
 
-  // handling filter change
-  changeFilterType = (e) => {
+  handleChange = (event, value) => {
     this.setState({
-      filterType: e.target.value
-    }, () => {
-      // when filter is changed calling the api again
-      this.callApi();
+      newDataLength: (this.numberOfRecordPerPage * value),
+      previousDataLength: ((this.numberOfRecordPerPage * value) - this.numberOfRecordPerPage)
     });
+  };
+
+  storeData = (album, albumData) => {
+    this.props.setData({ album, albumData })
   }
-
-  // handling search text change
-  handleSearch = (e) => {
-    this.setState({
-      searchedText: e.target.value
-    });
-  }
-
-
   render() {
-    const { jsonObject, filterType, searchedText } = this.state;
-    this.noDataFoundFlag = true;
+    const { albumData, newDataLength, previousDataLength } = this.state;
+    const { classes } = this.props;
     return (
-      <div className="App">
-        <div className="select-search-bar">
-          <div className="select-bar">
-            <label>Choose a Filter Type:</label>
-            <select name="filterType" onChange={this.changeFilterType}>
-              <option value="series">Series</option>
-              <option value="characters">Characters</option>
-              <option value="comics">Comics</option>
-            </select>
-          </div>
-          <div className="search-container">
-            <input type="text" value={searchedText} placeholder="Search.." name="search" onChange={this.handleSearch} />
-          </div>
-        </div>
-        <div className="flex-container">
-          {/* check if data is available in jsonObject only than iterate */}
-          {jsonObject[filterType] ?
-            jsonObject[filterType].map((item, index) => {
-              // if no data is matched with searched string showing no Data found string
-              (this.noDataFoundFlag && (item[this.filterTitle[filterType]].toLowerCase().indexOf(searchedText.toLowerCase()) !== -1 ) ? this.noDataFoundFlag = false : this.text = null);
-              return (
-                item[this.filterTitle[filterType]].toLowerCase().indexOf(searchedText.toLowerCase()) !== -1 ? <div key={index}>{item[this.filterTitle[filterType]]}</div> : null
-              )
-            }) : null}
-        </div>
-        {/* showing do data found string */}
-        {this.noDataFoundFlag === true ? <div className="noDataFound">No Data Found</div> : ""}
-      </div>
-    );
-  }
-}
+      <div className="centerContent">
+        <div key="title" className="pageTitle">{"List Of Alnums"}</div>
+        <List key="list" className={classes.app}>
+          {albumData.map((album, index) => (
+            (index < newDataLength && index >= previousDataLength) ? (
+              <React.Fragment key={index}>
+                <ListItem key={"name" + index} alignItems="flex-start">
+                  <ListItemText key={"listItemText" + index}
+                    primary={"ALBUM TITLE: " + album.title}
+                    secondary={
+                      <React.Fragment>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          className={classes.inline}
+                          color="textPrimary"
+                          key={"typo" + index}
+                        >
+                          {"User Name: " + (album.user.name)}
+                        </Typography>
+                        <Link key={"link" + index} to={"/album/id=" + album.id} onClick={() => { this.storeData(album, albumData) }}>
+                          <Button key="button" className="float-right" variant="contained" color="primary">
+                            View More
+                        </Button>
+                        </Link>
 
-export default App;
+                      </React.Fragment>
+                    }
+                  />
+                </ListItem>
+                <Divider key={"divider" + index} variant="inset" component="li" />
+              </React.Fragment>
+            ) : null
+          ))}
+        </List>
+        <div className={classes.root} key="pagination">
+          <Pagination count={parseInt(albumData.length / this.numberOfRecordPerPage)} showFirstButton showLastButton onChange={this.handleChange} />
+        </div>
+      </div>
+    )
+  }
+
+}
+const mapStateToProps = state => {
+  return {
+    allAlbums: state.album_reducer.allAlbums
+  };
+};
+//connect function from react-redux, used to subscribe to the redux store
+export default connect(
+  mapStateToProps,
+  actions
+)(withStyles(styles)(App));

@@ -2,11 +2,27 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+import Album from './Album';
+import ErrorBoundary from './ErrorBoundary';
 import reportWebVitals from './reportWebVitals';
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { Provider } from "react-redux";
+import store from "./Store";
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <Provider store={store}>
+        <Router>
+
+          <Switch>
+            <Route path="/" exact component={App} />
+            <Route path="/album/id:id" exact component={Album} />
+          </Switch>
+
+        </Router>
+      </Provider>
+    </ErrorBoundary>
   </React.StrictMode>,
   document.getElementById('root')
 );
