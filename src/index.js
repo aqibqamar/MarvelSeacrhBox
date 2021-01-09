@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import Album from './Album';
-import ErrorBoundary from './ErrorBoundary';
+import ErrorBoundaryAlbum from './ErrorBoundaryAlbum';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { Provider } from "react-redux";
@@ -11,7 +11,7 @@ import store from "./Store";
 
 ReactDOM.render(
   <React.StrictMode>
-    <ErrorBoundary>
+    <ErrorBoundaryAlbum>
       <Provider store={store}>
         <Router>
 
@@ -22,7 +22,7 @@ ReactDOM.render(
 
         </Router>
       </Provider>
-    </ErrorBoundary>
+    </ErrorBoundaryAlbum>
   </React.StrictMode>,
   document.getElementById('root')
 );

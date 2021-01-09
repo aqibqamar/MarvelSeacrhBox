@@ -43,7 +43,6 @@ class Album extends React.Component {
     let id = this.getID();
     let api = "https://jsonplaceholder.typicode.com/albums/" + id + "/photos";
     axios.get(api).then(response => {
-      // return response.data;
       this.setState({
         albumPhotos: response.data
       });
@@ -64,7 +63,6 @@ class Album extends React.Component {
     return window.location.pathname.match(/id=([^/]+)/)[1];
   }
 
-
   handleChange = (event, value) => {
     this.setState({
       newDataLength: (this.numberOfRecordPerPage * value),
@@ -78,14 +76,14 @@ class Album extends React.Component {
     const { classes } = this.props;
     return (
       <div className="centerContent">
-        <div>{album.title}</div>
+        <div>{album.title ? album.title : ""}</div>
         <div className="relativePostion">
-          <span>{"Uploaded By: " + album.user.name}</span>
+          <span>{"Uploaded By: " + (album.title ? album.user.name : "")}</span>
           <Link key={"link"} to={"/"}>
-            <ArrowBackIosIcon className="arrowIcon"/>
+            <ArrowBackIosIcon className="arrowIcon" />
           </Link>
         </div>
-        
+
         <Grid key="grid" container className={classes.root} spacing={4}>
           <Grid item xs={12}>
             <Grid container justify="center" spacing={4}>

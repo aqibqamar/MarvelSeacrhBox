@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-export default class ErrorBoundary extends Component {
+export default class ErrorBoundaryAlbum extends Component {
   state = {
-    error: '',
-    errorInfo: '',
     hasError: false,
   };
   static getDerivedStateFromError(error) {
@@ -12,12 +10,12 @@ export default class ErrorBoundary extends Component {
   }
   componentDidCatch(error, errorInfo) {
     // eslint-disable-next-line no-console
-    this.setState({ errorInfo });
+    this.setState({ hasError: true });
   }
 
   render() {
     // next code block goes here
-    const { hasError, errorInfo } = this.state;
+    const { hasError } = this.state;
     if (hasError) {
       return (
         <div className="card my-5">
@@ -39,6 +37,6 @@ export default class ErrorBoundary extends Component {
     
   }
 }
-ErrorBoundary.propTypes = {
+ErrorBoundaryAlbum.propTypes = {
   children: PropTypes.oneOfType([ PropTypes.object, PropTypes.array ]).isRequired,
 };
